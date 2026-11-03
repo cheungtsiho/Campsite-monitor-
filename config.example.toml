@@ -1,0 +1,58 @@
+# Copy to config.toml and edit.  `python -m campsite_monitor list` shows catalog keys.
+
+# Where already-notified openings are remembered between runs.
+state_file = ".campsite_state.json"
+
+[notify]
+# Any you leave blank are skipped. Env vars NTFY_TOPIC / WEBHOOK_URL / SMTP_* override these.
+# ntfy: install the ntfy app, subscribe to a long random topic name, put it here.
+ntfy_topic = ""
+webhook_url = ""      # Slack or Discord incoming webhook
+# smtp_host = "smtp.gmail.com"
+# smtp_port = 587
+# smtp_user = "you@gmail.com"     # use an app password via SMTP_PASSWORD env var
+# email_to = "you@gmail.com"
+
+# Applied to every [[search]] unless the search overrides it.
+[defaults]
+start = 2026-11-06          # earliest check-in
+end = 2027-04-30            # latest check-out
+nights = 2
+check_in_days = ["fri"]     # weekend trips: Fri -> Sun. Remove for any day.
+
+# ---- Searches ---------------------------------------------------------------
+
+[[search]]
+campground = "kirby-cove"
+
+[[search]]
+campground = "steep-ravine"
+nights = 1
+check_in_days = []           # any night at all
+
+[[search]]
+campground = "samuel-p-taylor"
+
+[[search]]
+campground = "mount-diablo"
+facility = "juniper"         # only the Juniper campground, not Live Oak
+
+[[search]]
+campground = "half-moon-bay"
+
+[[search]]
+campground = "pinnacles"
+check_in_days = ["fri", "sat"]
+site_types = ["tent"]        # substring match on site type
+
+# Anything not in the catalog:
+# [[search]]
+# provider = "recreation.gov"
+# campground_id = "232491"            # from recreation.gov/camping/campgrounds/<id>
+# name = "My campground"
+#
+# [[search]]
+# provider = "reservecalifornia"
+# park = "big basin"                  # or facility_id = 123 (see `rc-search`)
+# include_sites = ["0[0-2]*"]         # glob on site name
+# exclude_sites = ["*ADA*"]

@@ -1,0 +1,46 @@
+# Runs the monitor on a schedule in GitHub Actions (free for public repos).
+# Setup:
+#   1. Commit a config file as monitor.toml (config.toml is git-ignored so it stays local).
+#   2. Add repository secret NTFY_TOPIC (and/or WEBHOOK_URL, SMTP_* ...).
+#   3. Enable Actions. GitHub cron can lag by several minutes under load.
+name: campsite-monitor
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: campsite-monitor
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # Persist the "already notified" list between runs.
+      - uses: actions/cache/restore@v4
+        with:
+          path: .campsite_state.json
+          key: campsite-state-${{ github.run_id }}
+          restore-keys: campsite-state-
+      - name: Check availability
+        if: hashFiles('monitor.toml') != ''
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        run: python -m campsite_monitor check -c monitor.toml --state .campsite_state.json
+      - uses: actions/cache/save@v4
+        if: always() && hashFiles('.campsite_state.json') != ''
+        with:
+          path: .campsite_state.json
+          key: campsite-state-${{ github.run_id }}

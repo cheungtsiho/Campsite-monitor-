@@ -1,0 +1,4 @@
+config.toml
+.campsite_state.json
+__pycache__/
+*.pyc
